@@ -43,7 +43,7 @@ namespace CavyWorks.StateMachine
         public StateConfiguration<TState, TInput> Condition(Func<TState, TInput, Task<bool>> condition)
         {
             var node = FindOrCreateNode(_state);
-            node.Condition = condition;
+            node.Condition = new TransitCondition<TState, TInput>(condition);
             return this;
         }
 
@@ -53,7 +53,27 @@ namespace CavyWorks.StateMachine
         public StateConfiguration<TState, TInput> ConditionFor(TInput input, Func<TState, TInput, Task<bool>> conditionFor)
         {
             var node = FindOrCreateNode(_state);
-            node.AddOrUpdateConditionFor(input, conditionFor);
+            node.AddOrUpdateConditionFor(input, new TransitCondition<TState, TInput>(conditionFor));
+            return this;
+        }
+        
+        /// <summary>
+        ///     Set common condition for validation before transition to next state.
+        /// </summary>
+        public StateConfiguration<TState, TInput> Condition(Func<TState, TInput, Task<bool>> condition, string errorMessage)
+        {
+            var node = FindOrCreateNode(_state);
+            node.Condition = new TransitCondition<TState, TInput>(condition, errorMessage);
+            return this;
+        }
+
+        /// <summary>
+        ///     Set condition for validation before transition to next state. This condition based on concrete input value.
+        /// </summary>
+        public StateConfiguration<TState, TInput> ConditionFor(TInput input, Func<TState, TInput, Task<bool>> conditionFor, string errorMessage)
+        {
+            var node = FindOrCreateNode(_state);
+            node.AddOrUpdateConditionFor(input, new TransitCondition<TState, TInput>(conditionFor, errorMessage));
             return this;
         }
 

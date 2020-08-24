@@ -133,6 +133,72 @@ namespace CavyWorks.StateMachine
         {
             return config.ConditionFor(input, (x, y) => conditionFor(x));
         }
+        
+        
+        
+        /// <summary>
+        ///     Set common condition for validation before transition to next state.
+        /// </summary>
+        public static StateConfiguration<TState, TInput> Condition<TState, TInput>(this StateConfiguration<TState, TInput> config, Func<bool> condition, string messge)
+        {
+            return config.Condition((x, y) => Task.FromResult(condition()), messge);
+        }
+        
+        /// <summary>
+        ///     Set common condition for validation before transition to next state.
+        /// </summary>
+        public static StateConfiguration<TState, TInput> Condition<TState, TInput>(this StateConfiguration<TState, TInput> config, Func<Task<bool>> condition, string messge)
+        {
+            return config.Condition((x, y) => condition(), messge);
+        }
+        
+        /// <summary>
+        ///     Set common condition for validation before transition to next state.
+        /// </summary>
+        public static StateConfiguration<TState, TInput> Condition<TState, TInput>(this StateConfiguration<TState, TInput> config, Func<TState, TInput, bool> condition, string messge)
+        {
+            return config.Condition((x, y) => Task.FromResult(condition(x, y)), messge);
+        }
+
+        /// <summary>
+        ///     Set condition for validation before transition to next state. This condition based on concrete input value.
+        /// </summary>
+        public static StateConfiguration<TState, TInput> ConditionFor<TState, TInput>(this StateConfiguration<TState, TInput> config, TInput input, Func<bool> conditionFor, string messge)
+        {
+            return config.ConditionFor(input, (x, y) => Task.FromResult(conditionFor()), messge);
+        }
+        
+        /// <summary>
+        ///     Set condition for validation before transition to next state. This condition based on concrete input value.
+        /// </summary>
+        public static StateConfiguration<TState, TInput> ConditionFor<TState, TInput>(this StateConfiguration<TState, TInput> config, TInput input, Func<Task<bool>> conditionFor, string messge)
+        {
+            return config.ConditionFor(input, (x, y) => conditionFor(), messge);
+        }
+        
+        /// <summary>
+        ///     Set condition for validation before transition to next state. This condition based on concrete input value.
+        /// </summary>
+        public static StateConfiguration<TState, TInput> ConditionFor<TState, TInput>(this StateConfiguration<TState, TInput> config, TInput input, Func<TState, TInput, bool> conditionFor, string messge)
+        {
+            return config.ConditionFor(input, (x, y) => Task.FromResult(conditionFor(x, y)), messge);
+        }
+        
+        /// <summary>
+        ///     Set condition for validation before transition to next state. This condition based on concrete input value.
+        /// </summary>
+        public static StateConfiguration<TState, TInput> ConditionFor<TState, TInput>(this StateConfiguration<TState, TInput> config, TInput input, Func<TState, bool> conditionFor, string messge)
+        {
+            return config.ConditionFor(input, (x, y) => Task.FromResult(conditionFor(x)), messge);
+        }
+        
+        /// <summary>
+        ///     Set condition for validation before transition to next state. This condition based on concrete input value.
+        /// </summary>
+        public static StateConfiguration<TState, TInput> ConditionFor<TState, TInput>(this StateConfiguration<TState, TInput> config, TInput input, Func<TState, Task<bool>> conditionFor, string messge)
+        {
+            return config.ConditionFor(input, (x, y) => conditionFor(x), messge);
+        }
 
     }
 }

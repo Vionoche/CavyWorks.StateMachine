@@ -24,7 +24,7 @@ namespace CavyWorks.StateMachine
         /// <summary>
         ///     Condition Func for transition into new state.
         /// </summary>
-        public Func<TState, TInput, Task<bool>> Condition { get; set; }
+        public TransitCondition<TState, TInput> Condition { get; set; }
 
         /// <summary>
         ///     Func runs when performs into current state (entry into new state).
@@ -44,7 +44,7 @@ namespace CavyWorks.StateMachine
         /// <summary>
         ///     All functions that can performs for entry into current state.
         /// </summary>
-        public Dictionary<TInput, Func<TState, TInput, Task<bool>>> ConditionsFor { get; } = new Dictionary<TInput, Func<TState, TInput, Task<bool>>>();
+        public Dictionary<TInput, TransitCondition<TState, TInput>> ConditionsFor { get; } = new Dictionary<TInput, TransitCondition<TState, TInput>>();
 
         /// <summary>
         ///     All functions that can performs for exit from current state.
@@ -67,7 +67,7 @@ namespace CavyWorks.StateMachine
         /// <summary>
         ///     Add or update condition.
         /// </summary>
-        public void AddOrUpdateConditionFor(TInput input, Func<TState, TInput, Task<bool>> conditionFor)
+        public void AddOrUpdateConditionFor(TInput input, TransitCondition<TState, TInput> conditionFor)
         {
             ConditionsFor[input] = conditionFor;
         }
@@ -93,9 +93,9 @@ namespace CavyWorks.StateMachine
         /// </summary>
         public async Task<TState> TransitAsync(TInput input)
         {
-            bool conditionResult = await ProcessAllConditions(input).ConfigureAwait(false);
+            var conditionResult = await ProcessAllConditions(input).ConfigureAwait(false);
 
-            if (!conditionResult)
+            if (!conditionResult.CanProcess)
             {
                 return State;
             }
@@ -107,37 +107,57 @@ namespace CavyWorks.StateMachine
 
             return transition.Destination;
         }
-
-        private async Task<bool> ProcessAllConditions(TInput input)
+        
+        
+        /// <summary>
+        ///     Check if can transit.
+        /// </summary>
+        public async Task<ProcessResult> CanTransitWithMessageAsync(TInput input, Func<string> exceptionMessageFactory)
         {
-            bool conditionResult = await ProcessCondition(input).ConfigureAwait(false);
-            bool conditionForResult = await ProcessConditionFor(input).ConfigureAwait(false);
+            if (!Transitions.TryGetValue(input, out _))
+                return new ProcessResult(false, exceptionMessageFactory());
+            
+            var conditionResult = await ProcessAllConditions(input).ConfigureAwait(false);
 
-            return conditionResult && conditionForResult;
+            return !conditionResult.CanProcess 
+                ? conditionResult : 
+                new ProcessResult();
         }
 
-        private async Task<bool> ProcessCondition(TInput input)
+        private async Task<ProcessResult> ProcessAllConditions(TInput input)
         {
-            bool result = true;
+            var conditionResult = await ProcessCondition(input).ConfigureAwait(false);
+            var conditionForResult = await ProcessConditionFor(input).ConfigureAwait(false);
 
-            if (Condition != null)
-            {
-                result = await Condition.Invoke(State, input).ConfigureAwait(false);
-            }
+            if (conditionResult.CanProcess && conditionForResult.CanProcess)
+                return new ProcessResult();
 
-            return result;
+            if (!conditionResult.CanProcess)
+                return conditionResult;
+            
+            if (!conditionForResult.CanProcess)
+                return conditionForResult;
+            
+            return new ProcessResult();
         }
 
-        private async Task<bool> ProcessConditionFor(TInput input)
+        private async Task<ProcessResult> ProcessCondition(TInput input)
         {
-            bool result = true;
+            if (Condition == null) 
+                return new ProcessResult();
+            
+            var result = await Condition.Condition.Invoke(State, input).ConfigureAwait(false);
+            return new ProcessResult(result, Condition.Message);
+        }
 
-            if (ConditionsFor.TryGetValue(input, out var condition) && condition != null)
-            {
-                result = await condition(State, input).ConfigureAwait(false);
-            }
+        private async Task<ProcessResult> ProcessConditionFor(TInput input)
+        {
+            if (!ConditionsFor.TryGetValue(input, out var condition) || condition == null)
+                return new ProcessResult();
+            
+            var result = await condition.Condition(State, input).ConfigureAwait(false);
+            return new ProcessResult(result, condition.Message);
 
-            return result;
         }
     }
 }

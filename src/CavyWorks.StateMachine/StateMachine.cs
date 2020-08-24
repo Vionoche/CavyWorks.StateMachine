@@ -6,7 +6,6 @@ namespace CavyWorks.StateMachine
 {
     /// <summary>
     ///     Main state machine's class.
-    ///     TODO: Add async functions support.
     /// </summary>
     /// <typeparam name="TState">State's type.</typeparam>
     /// <typeparam name="TInput">Input's type.</typeparam>
@@ -29,8 +28,9 @@ namespace CavyWorks.StateMachine
 
         private Func<Transition<TState, TInput>, Task> _onEntry;
         private Func<Transition<TState, TInput>, Task> _onExit;
-
-
+        private Func<TState, TInput, string> _exceptionMessageFactory =
+            (x, y) => string.Format($"Transition for state {x} and input {y} failed");
+        
         /// <summary>
         ///     State configuration.
         /// </summary>
@@ -45,6 +45,15 @@ namespace CavyWorks.StateMachine
         public StateMachine<TState, TInput> OnEntry(Func<Transition<TState, TInput>, Task> onEntry)
         {
             this._onEntry = onEntry;
+            return this;
+        }
+        
+        /// <summary>
+        ///     Func runs when performs into current state (entry into new state).
+        /// </summary>
+        public StateMachine<TState, TInput> InvalidTransitionMessage(Func<TState, TInput, string> messageFactory)
+        {
+            _exceptionMessageFactory = messageFactory;
             return this;
         }
 
@@ -73,6 +82,45 @@ namespace CavyWorks.StateMachine
                 await ProcessExit(oldState, input, State).ConfigureAwait(false);
                 await ProcessEntry(oldState, input, State).ConfigureAwait(false);
             }
+        }
+        
+        /// <summary>
+        ///     Update machine's state.
+        /// </summary>
+        public async Task UpdateAndThrowAsync(TInput input)
+        {
+            var result = await CanTransitWithMessageAsync(input).ConfigureAwait(false);
+            if (!result.CanProcess)
+                throw new TransitException(result.Message);
+
+            await UpdateAsync(input).ConfigureAwait(false);
+        }
+        
+        /// <summary>
+        ///     Check if Can Transit
+        /// </summary>
+        public async Task<bool> CanTransitAsync(TInput input)
+        {
+            var result = await CanTransitWithMessageAsync(input).ConfigureAwait(false);
+            return result.CanProcess;
+        }
+        
+        /// <summary>
+        ///     Check if Can Transit
+        /// </summary>
+        private async Task<ProcessResult> CanTransitWithMessageAsync(TInput input)
+        {
+            if (!Nodes.TryGetValue(State, out var node)) 
+                return new ProcessResult(false, _exceptionMessageFactory(State, input));
+            
+            var conditionsResult = await node.CanTransitWithMessageAsync(input, 
+                () => _exceptionMessageFactory(State, input))
+                .ConfigureAwait(false);
+            
+            if (!conditionsResult.CanProcess)
+                return conditionsResult;
+            
+            return new ProcessResult();
         }
 
         private async Task ProcessEntry(TState source, TInput input, TState destination)
