@@ -1,8 +1,30 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0C043F37-6C92-4F55-930F-AC6327955A0C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E7C32F3A-F32D-4110-A6C5-DC2A74DD3793}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CavyWorks.StateMachine", "src\CavyWorks.StateMachine\CavyWorks.StateMachine.csproj", "{67DAEE08-C5E5-42C6-B5A1-9C83EC9EFF22}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CavyWorks.StateMachine.UnitTests", "tests\CavyWorks.StateMachine.UnitTests\CavyWorks.StateMachine.UnitTests.csproj", "{85AB8B95-4808-47D8-9192-24A5CD429312}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{67DAEE08-C5E5-42C6-B5A1-9C83EC9EFF22} = {0C043F37-6C92-4F55-930F-AC6327955A0C}
+		{85AB8B95-4808-47D8-9192-24A5CD429312} = {E7C32F3A-F32D-4110-A6C5-DC2A74DD3793}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{67DAEE08-C5E5-42C6-B5A1-9C83EC9EFF22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67DAEE08-C5E5-42C6-B5A1-9C83EC9EFF22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67DAEE08-C5E5-42C6-B5A1-9C83EC9EFF22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67DAEE08-C5E5-42C6-B5A1-9C83EC9EFF22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85AB8B95-4808-47D8-9192-24A5CD429312}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85AB8B95-4808-47D8-9192-24A5CD429312}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85AB8B95-4808-47D8-9192-24A5CD429312}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85AB8B95-4808-47D8-9192-24A5CD429312}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
