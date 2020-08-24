@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+<metadata>
+  <id>CavyWorks.StateMachine</id>
+  <version>$version$</version>
+  <authors>Vionoche</authors>
+  <owners>Vinoche</owners>
+  <requireLicenseAcceptance>false</requireLicenseAcceptance>
+  <license type="expression">MIT</license>
+  <projectUrl>https://github.com/Vionoche/CavyWorks.StateMachine</projectUrl>
+  <description>Simple state machine library</description>
+  <copyright>Copyright 2020</copyright>
+  <dependencies>
+    <group targetFramework=".NETStandard2.0">
+    </group>
+  </dependencies>
+</metadata>
+<files>
+  <file src="src\CavyWorks.StateMachine\bin\Release\netstandard2.0\CavyWorks.StateMachine.dll" target="lib\netstandard2.0" />
+</files>
+</package>
