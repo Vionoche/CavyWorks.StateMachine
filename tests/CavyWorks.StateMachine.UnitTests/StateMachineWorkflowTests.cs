@@ -60,30 +60,30 @@ namespace CavyWorks.StateMachine.UnitTests
 
             Assert.Equal(DocumentStatus.Draft, machine.State);
 
-            await machine.UpdateAsync(DocumentAction.Save);
+            await machine.UpdateAsync(DocumentAction.Save).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Agreement, machine.State);
             Assert.True(entryAgreementFromDraft);
             Assert.False(entryAgreementFromEditing);
 
-            await machine.UpdateAsync(DocumentAction.NotAccept);
+            await machine.UpdateAsync(DocumentAction.NotAccept).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Editing, machine.State);
             Assert.True(exitAgreementToEditing);
             Assert.False(exitAgreementToAccepted);
 
-            await machine.UpdateAsync(DocumentAction.Save);
+            await machine.UpdateAsync(DocumentAction.Save).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Agreement, machine.State);
             Assert.True(entryAgreementFromDraft);
             Assert.True(entryAgreementFromEditing);
 
-            await machine.UpdateAsync(DocumentAction.Accept);
+            await machine.UpdateAsync(DocumentAction.Accept).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Accepted, machine.State);
 
-            await machine.UpdateAsync(DocumentAction.Send);
+            await machine.UpdateAsync(DocumentAction.Send).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Accepted, machine.State);
             Assert.False(entrySent);
 
             allowSend = true;
-            await machine.UpdateAsync(DocumentAction.Send);
+            await machine.UpdateAsync(DocumentAction.Send).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Sent, machine.State);
             Assert.True(entrySent);
         }

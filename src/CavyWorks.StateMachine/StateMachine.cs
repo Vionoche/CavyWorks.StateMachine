@@ -65,13 +65,13 @@ namespace CavyWorks.StateMachine
             TState oldState = State;
             if (Nodes.TryGetValue(State, out var node))
             {
-                State = await node.TransitAsync(input);
+                State = await node.TransitAsync(input).ConfigureAwait(false);
             }
 
             if (!State.Equals(oldState))
             {
-                await ProcessExit(oldState, input, State);
-                await ProcessEntry(oldState, input, State);
+                await ProcessExit(oldState, input, State).ConfigureAwait(false);
+                await ProcessEntry(oldState, input, State).ConfigureAwait(false);
             }
         }
 
@@ -83,18 +83,18 @@ namespace CavyWorks.StateMachine
             {
                 if (node.OnEntry != null)
                 {
-                    await node.OnEntry(transition);
+                    await node.OnEntry(transition).ConfigureAwait(false);
                 }
                 
                 if (node.OnEntryFrom.TryGetValue(input, out var onEntryFrom))
                 {
-                    await onEntryFrom(transition);
+                    await onEntryFrom(transition).ConfigureAwait(false);
                 }
             }
 
             if (_onEntry != null)
             {
-                await _onEntry(transition);
+                await _onEntry(transition).ConfigureAwait(false);
             }
         }
 
@@ -106,18 +106,18 @@ namespace CavyWorks.StateMachine
             {
                 if (node.OnExit != null)
                 {
-                    await node.OnExit(transition);
+                    await node.OnExit(transition).ConfigureAwait(false);
                 }
 
                 if (node.OnExitTo.TryGetValue(input, out var onExitTo))
                 {
-                    await onExitTo(transition);
+                    await onExitTo(transition).ConfigureAwait(false);
                 }
             }
 
             if (_onExit != null)
             {
-                await _onExit(transition);
+                await _onExit(transition).ConfigureAwait(false);
             }
         }
     }

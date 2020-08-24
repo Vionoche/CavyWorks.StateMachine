@@ -93,7 +93,7 @@ namespace CavyWorks.StateMachine
         /// </summary>
         public async Task<TState> TransitAsync(TInput input)
         {
-            bool conditionResult = await ProcessAllConditions(input);
+            bool conditionResult = await ProcessAllConditions(input).ConfigureAwait(false);
 
             if (!conditionResult)
             {
@@ -110,8 +110,8 @@ namespace CavyWorks.StateMachine
 
         private async Task<bool> ProcessAllConditions(TInput input)
         {
-            bool conditionResult = await ProcessCondition(input);
-            bool conditionForResult = await ProcessConditionFor(input);
+            bool conditionResult = await ProcessCondition(input).ConfigureAwait(false);
+            bool conditionForResult = await ProcessConditionFor(input).ConfigureAwait(false);
 
             return conditionResult && conditionForResult;
         }
@@ -122,7 +122,7 @@ namespace CavyWorks.StateMachine
 
             if (Condition != null)
             {
-                result = await Condition.Invoke(State, input);
+                result = await Condition.Invoke(State, input).ConfigureAwait(false);
             }
 
             return result;
@@ -134,7 +134,7 @@ namespace CavyWorks.StateMachine
 
             if (ConditionsFor.TryGetValue(input, out var condition) && condition != null)
             {
-                result = await condition(State, input);
+                result = await condition(State, input).ConfigureAwait(false);
             }
 
             return result;

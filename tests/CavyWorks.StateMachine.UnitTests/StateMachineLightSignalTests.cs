@@ -12,10 +12,10 @@ namespace CavyWorks.StateMachine.UnitTests
 
             for (int i = 0; i < 5; i++)
             {
-                await AssertLightSignal(lightSignal, 30, Signals.Red);
-                await AssertLightSignal(lightSignal, 5, Signals.Yellow);
-                await AssertLightSignal(lightSignal, 30, Signals.Green);
-                await AssertLightSignal(lightSignal, 5, Signals.Yellow);
+                await AssertLightSignal(lightSignal, 30, Signals.Red).ConfigureAwait(false);
+                await AssertLightSignal(lightSignal, 5, Signals.Yellow).ConfigureAwait(false);
+                await AssertLightSignal(lightSignal, 30, Signals.Green).ConfigureAwait(false);
+                await AssertLightSignal(lightSignal, 5, Signals.Yellow).ConfigureAwait(false);
             }
         }
 
