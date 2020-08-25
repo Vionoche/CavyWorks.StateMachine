@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace CavyWorks.StateMachine.UnitTests
@@ -60,32 +61,123 @@ namespace CavyWorks.StateMachine.UnitTests
 
             Assert.Equal(DocumentStatus.Draft, machine.State);
 
-            await machine.UpdateAsync(DocumentAction.Save);
+            await machine.UpdateAsync(DocumentAction.Save).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Agreement, machine.State);
             Assert.True(entryAgreementFromDraft);
             Assert.False(entryAgreementFromEditing);
 
-            await machine.UpdateAsync(DocumentAction.NotAccept);
+            await machine.UpdateAsync(DocumentAction.NotAccept).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Editing, machine.State);
             Assert.True(exitAgreementToEditing);
             Assert.False(exitAgreementToAccepted);
 
-            await machine.UpdateAsync(DocumentAction.Save);
+            await machine.UpdateAsync(DocumentAction.Save).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Agreement, machine.State);
             Assert.True(entryAgreementFromDraft);
             Assert.True(entryAgreementFromEditing);
 
-            await machine.UpdateAsync(DocumentAction.Accept);
+            await machine.UpdateAsync(DocumentAction.Accept).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Accepted, machine.State);
 
-            await machine.UpdateAsync(DocumentAction.Send);
+            await machine.UpdateAsync(DocumentAction.Send).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Accepted, machine.State);
             Assert.False(entrySent);
 
             allowSend = true;
-            await machine.UpdateAsync(DocumentAction.Send);
+            await machine.UpdateAsync(DocumentAction.Send).ConfigureAwait(false);
             Assert.Equal(DocumentStatus.Sent, machine.State);
             Assert.True(entrySent);
+        }
+        
+       
+        [Fact]
+        public async Task WorkflowCanTransitTest()
+        {
+            var machine = new StateMachine<DocumentStatus, DocumentAction>(DocumentStatus.Draft)
+                .InvalidTransitionMessage((x, y) => "Invalid Transition");
+            
+            machine
+                .Configuration(DocumentStatus.Draft)
+                .Transit(DocumentAction.Save, DocumentStatus.Agreement);
+
+            Assert.True(await machine.CanTransitAsync(DocumentAction.Save).ConfigureAwait(false));
+            Assert.False(await machine.CanTransitAsync(DocumentAction.Accept).ConfigureAwait(false));
+        }
+        
+        [Fact]
+        public async Task WorkflowConditionForCanTransitTest()
+        {
+            var machine = new StateMachine<DocumentStatus, DocumentAction>(DocumentStatus.Draft)
+                .InvalidTransitionMessage((x, y) => "Invalid Transition");
+            
+            machine
+                .Configuration(DocumentStatus.Draft)
+                .ConditionFor(DocumentAction.Save, () => false)
+                .Transit(DocumentAction.Save, DocumentStatus.Agreement);
+            
+            machine
+                .Configuration(DocumentStatus.Draft)
+                .ConditionFor(DocumentAction.Accept, () => true)
+                .Transit(DocumentAction.Accept, DocumentStatus.Agreement);
+
+            Assert.False(await machine.CanTransitAsync(DocumentAction.Save).ConfigureAwait(false));
+            Assert.True(await machine.CanTransitAsync(DocumentAction.Accept).ConfigureAwait(false));
+        }
+        
+        [Fact]
+        public async Task WorkflowConditionCanTransitTest()
+        {
+            var machine = new StateMachine<DocumentStatus, DocumentAction>(DocumentStatus.Draft)
+                .InvalidTransitionMessage((x, y) => "Invalid Transition");
+            
+            machine
+                .Configuration(DocumentStatus.Draft)
+                .Condition(() => false)
+                .Transit(DocumentAction.Save, DocumentStatus.Agreement);
+
+            Assert.True(await machine.CanTransitAsync(DocumentAction.Accept).ConfigureAwait(false));
+        }
+        
+        [Fact]
+        public async Task WorkflowTransitionThrowTest()
+        {
+            var machine = new StateMachine<DocumentStatus, DocumentAction>(DocumentStatus.Draft)
+                .InvalidTransitionMessage((x, y) => "Invalid Transition");
+            
+            machine
+                .Configuration(DocumentStatus.Draft)
+                .Transit(DocumentAction.Save, DocumentStatus.Agreement);
+
+            var ex = await Assert.ThrowsAsync<TransitException>(() => 
+                machine.UpdateAndThrowAsync(DocumentAction.Send));
+            Assert.Equal("Invalid Transition", ex.Message);
+        }
+
+        [Fact]
+        public async Task WorkflowWithConditionThrowTest()
+        {
+            var machine = new StateMachine<DocumentStatus, DocumentAction>(DocumentStatus.Draft);
+            machine.Configuration(DocumentStatus.Draft)
+                .Condition((x,y) => false, "Invalid Condition")
+                .Transit(DocumentAction.Save, DocumentStatus.Agreement);
+
+            var ex = await Assert.ThrowsAsync<TransitException>(() => 
+                    machine.UpdateAndThrowAsync(DocumentAction.Save));
+            
+            Assert.Equal("Invalid Condition", ex.Message);
+        }
+        
+        [Fact]
+        public async Task WorkflowWithConditionForThrowTest()
+        {
+            var machine = new StateMachine<DocumentStatus, DocumentAction>(DocumentStatus.Draft);
+            machine.Configuration(DocumentStatus.Draft)
+                .ConditionFor(DocumentAction.Save, (x) => false, "Invalid ConditionFor")
+                .Transit(DocumentAction.Save, DocumentStatus.Agreement);
+
+            var ex = await Assert.ThrowsAsync<TransitException>(() => 
+                machine.UpdateAndThrowAsync(DocumentAction.Save));
+            Assert.Equal("Invalid ConditionFor", ex.Message);
         }
     }
 }

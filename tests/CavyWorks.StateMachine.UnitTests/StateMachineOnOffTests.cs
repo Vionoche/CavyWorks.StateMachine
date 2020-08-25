@@ -22,23 +22,23 @@ namespace CavyWorks.StateMachine.UnitTests
             Assert.Equal("off", machine.State);
             Assert.False(isLightOn);
 
-            await machine.UpdateAsync("");
+            await machine.UpdateAsync("").ConfigureAwait(false);
             Assert.Equal("off", machine.State);
             Assert.False(isLightOn);
 
-            await machine.UpdateAsync("miss");
+            await machine.UpdateAsync("miss").ConfigureAwait(false);
             Assert.Equal("off", machine.State);
             Assert.False(isLightOn);
 
-            await machine.UpdateAsync("push");
+            await machine.UpdateAsync("push").ConfigureAwait(false);
             Assert.Equal("on", machine.State);
             Assert.True(isLightOn);
 
-            await machine.UpdateAsync("push");
+            await machine.UpdateAsync("push").ConfigureAwait(false);
             Assert.Equal("off", machine.State);
             Assert.False(isLightOn);
 
-            await machine.UpdateAsync("push");
+            await machine.UpdateAsync("push").ConfigureAwait(false);
             Assert.Equal("on", machine.State);
             Assert.True(isLightOn);
         }

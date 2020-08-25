@@ -54,7 +54,7 @@ namespace CavyWorks.StateMachine.UnitTests
             public async Task TickAsync()
             {
                 _timeTick++;
-                await _machine.UpdateAsync(_reverse);
+                await _machine.UpdateAsync(_reverse).ConfigureAwait(false);
             }
 
             private Task Reverse()
