@@ -125,7 +125,7 @@ namespace CavyWorks.StateMachine.UnitTests
         }
         
         [Fact]
-        public async Task WorkflowConditionCanTransitTest()
+        public async Task WorkflowConditionCanNotTransitTest()
         {
             var machine = new StateMachine<DocumentStatus, DocumentAction>(DocumentStatus.Draft)
                 .InvalidTransitionMessage((x, y) => "Invalid Transition");
@@ -135,7 +135,8 @@ namespace CavyWorks.StateMachine.UnitTests
                 .Condition(() => false)
                 .Transit(DocumentAction.Save, DocumentStatus.Agreement);
 
-            Assert.True(await machine.CanTransitAsync(DocumentAction.Accept).ConfigureAwait(false));
+            var canTransit = await machine.CanTransitAsync(DocumentAction.Save).ConfigureAwait(false);
+            Assert.False(canTransit);
         }
         
         [Fact]
